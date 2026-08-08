@@ -4,14 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>個人財務助理</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2563eb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style>
+    .toast-animate {
+      animation: fadeInOut 3s forwards;
+    }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateY(-20px); }
+      15% { opacity: 1; transform: translateY(0); }
+      85% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-20px); }
+    }
+  </style>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans min-h-screen pb-16">
+
+  <!-- 網頁內 Toast 提示區 (不使用預設 alert 彈窗) -->
+  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-blue-600 text-white font-bold text-xs px-4 py-2.5 rounded-2xl shadow-lg hidden flex items-center gap-1.5 border border-blue-400">
+    <span id="toast-icon">✅</span>
+    <span id="toast-msg">操作成功！</span>
+  </div>
 
   <!-- LINE 內建瀏覽器引導提示 -->
   <div id="line-notice" class="hidden bg-amber-500 text-white text-xs p-2.5 text-center flex justify-between items-center px-4 sticky top-0 z-50 shadow">
@@ -47,12 +66,13 @@
   <main class="max-w-md mx-auto p-4 space-y-4">
 
     <!-- Navigation Tabs -->
-    <div class="flex bg-white rounded-xl shadow-sm p-1 border border-gray-200 text-xs font-bold text-gray-500">
-      <button onclick="switchTab('record')" id="tab-record" class="flex-1 py-2.5 rounded-lg text-center bg-blue-600 text-white transition">記帳</button>
-      <button onclick="switchTab('list')" id="tab-list" class="flex-1 py-2.5 rounded-lg text-center transition">明細</button>
-      <button onclick="switchTab('category')" id="tab-category" class="flex-1 py-2.5 rounded-lg text-center transition">分類設定</button>
-      <button onclick="switchTab('card')" id="tab-card" class="flex-1 py-2.5 rounded-lg text-center transition">刷卡提醒</button>
-      <button onclick="switchTab('analysis')" id="tab-analysis" class="flex-1 py-2.5 rounded-lg text-center transition">財務分析</button>
+    <div class="flex bg-white rounded-xl shadow-sm p-1 border border-gray-200 text-xs font-bold text-gray-500 overflow-x-auto">
+      <button onclick="switchTab('record')" id="tab-record" class="flex-1 min-w-[50px] py-2.5 rounded-lg text-center bg-blue-600 text-white transition">記帳</button>
+      <button onclick="switchTab('list')" id="tab-list" class="flex-1 min-w-[50px] py-2.5 rounded-lg text-center transition">明細</button>
+      <button onclick="switchTab('asset')" id="tab-asset" class="flex-1 min-w-[65px] py-2.5 rounded-lg text-center transition">💼 資產帳戶</button>
+      <button onclick="switchTab('category')" id="tab-category" class="flex-1 min-w-[65px] py-2.5 rounded-lg text-center transition">分類設定</button>
+      <button onclick="switchTab('card')" id="tab-card" class="flex-1 min-w-[65px] py-2.5 rounded-lg text-center transition">刷卡提醒</button>
+      <button onclick="switchTab('analysis')" id="tab-analysis" class="flex-1 min-w-[65px] py-2.5 rounded-lg text-center transition">財務分析</button>
     </div>
 
     <!-- 1. 記帳頁面 -->
@@ -77,46 +97,67 @@
         </div>
 
         <!-- 記帳表單 -->
-        <form id="record-form" onsubmit="addRecord(event)" class="space-y-3 text-xs">
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block font-bold text-gray-600 mb-1">日期</label>
-              <input type="date" id="input-date" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+        <form id="record-form" onsubmit="addRecord(event, false)" class="space-y-3 text-xs">
+          
+          <!-- 日期與快捷鍵 -->
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="font-bold text-gray-600">日期</label>
+              <div class="flex gap-1">
+                <button type="button" onclick="setDateShortcut('today')" class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-bold hover:bg-blue-100 text-[10px]">今天</button>
+                <button type="button" onclick="setDateShortcut('yesterday')" class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-bold hover:bg-gray-200 text-[10px]">昨天</button>
+              </div>
             </div>
-            <div>
-              <label class="block font-bold text-gray-600 mb-1">付款方式</label>
-              <select id="input-payment" class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                <option value="現金">💵 現金</option>
-                <option value="刷卡">💳 刷卡</option>
-                <option value="電子支付">📱 電子支付</option>
-              </select>
-            </div>
+            <input type="date" id="input-date" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
           </div>
 
+          <!-- 店名與分類 -->
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block font-bold text-gray-600 mb-1">店名 (選填)</label>
               <input type="text" id="input-shop" placeholder="如：全家、7-11" class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
             </div>
             <div>
-              <label class="block font-bold text-gray-600 mb-1">消費分類</label>
-              <select id="input-category" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+              <label class="block font-bold text-gray-600 mb-1">消費/收入分類</label>
+              <select id="input-category" onchange="handleCategoryChange()" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
               </select>
             </div>
           </div>
 
-          <div>
-            <label class="block font-bold text-gray-600 mb-1">品項描述</label>
-            <input type="text" id="input-desc" placeholder="例如：午餐便當、水費、全家咖啡" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+          <!-- 管道與扣款帳戶 -->
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block font-bold text-gray-600 mb-1">收付款管道</label>
+              <select id="input-payment" class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                <option value="💵 現金">💵 現金</option>
+                <option value="💳 刷卡">💳 刷卡</option>
+                <option value="📱 電子支付">📱 電子支付 (LINE Pay/街口)</option>
+                <option value="🚌 悠遊卡/一卡通">🚌 悠遊卡/一卡通</option>
+                <option value="🏦 銀行轉帳/匯款">🏦 銀行轉帳/匯款</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-gray-600 mb-1">連動資產帳戶</label>
+              <select id="input-asset-account" class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                <option value="">不連動帳戶</option>
+              </select>
+            </div>
           </div>
 
+          <!-- 品項描述 -->
+          <div>
+            <label class="block font-bold text-gray-600 mb-1">品項描述</label>
+            <input type="text" id="input-desc" placeholder="例如：午餐便當、水費、薪資入帳" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+
+          <!-- 數量、單價與總金額 -->
           <div class="grid grid-cols-3 gap-2">
             <div>
-              <label class="block font-bold text-gray-600 mb-1">數量</label>
+              <label class="block font-bold text-gray-600 mb-1">數量 (選填)</label>
               <input type="number" id="input-qty" value="1" min="1" oninput="calcAmount()" class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
             </div>
             <div>
-              <label class="block font-bold text-gray-600 mb-1">單價 (NT$)</label>
+              <label class="block font-bold text-gray-600 mb-1">單價 (選填)</label>
               <input type="number" id="input-price" placeholder="0" min="0" oninput="calcAmount()" class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
             </div>
             <div>
@@ -125,9 +166,15 @@
             </div>
           </div>
 
-          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow transition text-xs mt-2">
-            儲存紀錄
-          </button>
+          <!-- 按鈕區 -->
+          <div class="flex gap-2 pt-1">
+            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow transition text-xs">
+              儲存紀錄
+            </button>
+            <button type="button" onclick="addRecord(event, true)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-3 rounded-xl shadow transition text-xs whitespace-nowrap">
+              ➕ 儲存並記下一筆
+            </button>
+          </div>
         </form>
       </div>
     </section>
@@ -140,12 +187,17 @@
           <button onclick="clearAllRecords()" class="text-[11px] text-red-500 hover:underline">清除全部</button>
         </div>
 
+        <!-- 關鍵字搜尋框 -->
+        <div>
+          <input type="text" id="search-input" oninput="renderRecords()" placeholder="🔍 搜尋店名、品項或類別 (如：全家、水費)" class="w-full border border-gray-200 rounded-xl p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
         <div class="overflow-x-auto">
           <table class="w-full text-left text-[11px] text-gray-600">
             <thead>
               <tr class="border-b border-gray-200 bg-gray-50 text-gray-500 font-bold">
                 <th class="p-2">日期/店名</th>
-                <th class="p-2">品項 (類別)</th>
+                <th class="p-2">品項 (類別/管道)</th>
                 <th class="p-2 text-right">金額</th>
                 <th class="p-2 text-center">操作</th>
               </tr>
@@ -158,10 +210,58 @@
       </div>
     </section>
 
-    <!-- 3. 自訂分類設定頁面 -->
+    <!-- 3. 資產帳戶管理頁面 -->
+    <section id="page-asset" class="hidden space-y-4">
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 space-y-4 text-xs">
+        <h2 class="font-bold text-gray-700">💼 資產帳戶管理</h2>
+
+        <!-- 資產總覽卡片 -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-2xl shadow-md space-y-2">
+          <div class="flex justify-between text-blue-100 text-[11px]">
+            <span>當前淨資產總計</span>
+            <span id="asset-net-title">總資產 - 負債</span>
+          </div>
+          <div class="text-2xl font-black font-mono" id="asset-net-total">$0</div>
+          <div class="grid grid-cols-2 gap-2 pt-2 border-t border-blue-400/50 text-[11px]">
+            <div>
+              <span class="text-blue-100">💰 總資產存款：</span>
+              <span class="font-bold" id="asset-positive-total">$0</span>
+            </div>
+            <div>
+              <span class="text-blue-100">💳 總負債/信用卡：</span>
+              <span class="font-bold text-amber-200" id="asset-negative-total">$0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 新增帳戶基底 -->
+        <form onsubmit="addAssetAccount(event)" class="space-y-2 bg-gray-50 p-3 rounded-xl border border-gray-200">
+          <div class="font-bold text-blue-700">新增帳戶基底 (如：國泰銀行、郵局、現金)</div>
+          <div class="grid grid-cols-2 gap-2">
+            <input type="text" id="asset-name" placeholder="帳戶名稱 (如：國泰世華)" required class="border border-gray-200 rounded-lg p-2 text-xs outline-none">
+            <select id="asset-type" class="border border-gray-200 rounded-lg p-2 text-xs bg-white">
+              <option value="存款帳戶">💰 存款/現金帳戶 (正資產)</option>
+              <option value="信用卡負債">💳 信用卡/貸款 (負資產)</option>
+            </select>
+          </div>
+          <div class="flex gap-2">
+            <input type="number" id="asset-balance" placeholder="當前存款/金額 (NT$)" required class="flex-1 border border-gray-200 rounded-lg p-2 text-xs outline-none">
+            <button type="submit" class="bg-blue-600 text-white text-xs px-4 py-2 rounded-lg font-bold">新增帳戶</button>
+          </div>
+        </form>
+
+        <!-- 帳戶列表 -->
+        <div class="space-y-2">
+          <h3 class="font-bold text-gray-600">目前帳戶清單</h3>
+          <div id="asset-list" class="space-y-2"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 自訂分類設定頁面 -->
     <section id="page-category" class="hidden space-y-4">
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 space-y-4 text-xs">
-        <h2 class="font-bold text-gray-700">自訂分類管理</h2>
+        <h2 class="font-bold text-gray-700">自訂分類管理 (可刪除與調整順序)</h2>
         
         <form onsubmit="addCustomCategory(event)" class="space-y-2 bg-gray-50 p-3 rounded-xl border border-gray-200">
           <div class="font-bold text-blue-700">新增自訂分類 (如：水費、電費、定期定額)</div>
@@ -176,24 +276,24 @@
           </div>
         </form>
 
-        <div class="space-y-3">
+        <div class="space-y-4">
           <div>
             <span class="font-bold text-blue-600">【收入】</span>
-            <div id="cat-list-income" class="flex flex-wrap gap-1.5 mt-1"></div>
+            <div id="cat-list-income" class="flex flex-col gap-1.5 mt-2"></div>
           </div>
           <div>
             <span class="font-bold text-blue-600">【固定支出】</span>
-            <div id="cat-list-fixed" class="flex flex-wrap gap-1.5 mt-1"></div>
+            <div id="cat-list-fixed" class="flex flex-col gap-1.5 mt-2"></div>
           </div>
           <div>
             <span class="font-bold text-blue-600">【變動支出】</span>
-            <div id="cat-list-variable" class="flex flex-wrap gap-1.5 mt-1"></div>
+            <div id="cat-list-variable" class="flex flex-col gap-1.5 mt-2"></div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 4. 刷卡最晚繳費提醒設定 -->
+    <!-- 5. 刷卡最晚繳費提醒設定 -->
     <section id="page-card" class="hidden space-y-4">
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 space-y-4 text-xs">
         <h2 class="font-bold text-gray-700">💳 信用卡繳費提醒設定</h2>
@@ -223,7 +323,7 @@
       </div>
     </section>
 
-    <!-- 5. 財務分析頁面 -->
+    <!-- 6. 財務分析頁面 -->
     <section id="page-analysis" class="hidden space-y-4">
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 space-y-4 text-xs">
         <div class="flex justify-between items-center">
@@ -275,11 +375,13 @@
             <input type="date" id="edit-date" required class="w-full border rounded-lg p-2">
           </div>
           <div>
-            <label class="block font-bold text-gray-600 mb-1">付款方式</label>
+            <label class="block font-bold text-gray-600 mb-1">收付款管道</label>
             <select id="edit-payment" class="w-full border rounded-lg p-2 bg-white">
-              <option value="現金">💵 現金</option>
-              <option value="刷卡">💳 刷卡</option>
-              <option value="電子支付">📱 電子支付</option>
+              <option value="💵 現金">💵 現金</option>
+              <option value="💳 刷卡">💳 刷卡</option>
+              <option value="📱 電子支付">📱 電子支付</option>
+              <option value="🚌 悠遊卡/一卡通">🚌 悠遊卡/一卡通</option>
+              <option value="🏦 銀行轉帳/匯款">🏦 銀行轉帳/匯款</option>
             </select>
           </div>
         </div>
@@ -316,7 +418,7 @@
     }
 
     const defaultCategories = {
-      "收入": ["薪資", "獎金", "其他"],
+      "收入": ["薪資", "獎金", "其他收入"],
       "固定支出": ["房租", "保險", "電信", "訂閱", "水費", "電費"],
       "變動支出": ["外食", "超商", "生活用品", "娛樂", "醫療"]
     };
@@ -324,6 +426,11 @@
     let categories = JSON.parse(localStorage.getItem('my_categories')) || defaultCategories;
     let records = JSON.parse(localStorage.getItem('my_records')) || [];
     let cards = JSON.parse(localStorage.getItem('my_cards')) || [];
+    let assets = JSON.parse(localStorage.getItem('my_assets')) || [
+      { name: "國泰世華銀行", type: "存款帳戶", balance: 90000 },
+      { name: "郵局帳戶", type: "存款帳戶", balance: 50000 },
+      { name: "手邊現金", type: "存款帳戶", balance: 5000 }
+    ];
     let chartInstance = null;
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -331,16 +438,37 @@
       renderCategories();
       renderRecords();
       renderCards();
+      renderAssets();
       checkCardAlerts();
     });
 
+    function showToast(msg, icon = "✅") {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-icon').innerText = icon;
+      document.getElementById('toast-msg').innerText = msg;
+      toast.classList.remove('hidden');
+      toast.classList.add('toast-animate');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('toast-animate');
+      }, 3000);
+    }
+
+    function setDateShortcut(type) {
+      const d = new Date();
+      if (type === 'yesterday') {
+        d.setDate(d.getDate() - 1);
+      }
+      document.getElementById('input-date').valueAsDate = d;
+    }
+
     function switchTab(tabName) {
-      ['record', 'list', 'category', 'card', 'analysis'].forEach(t => {
+      ['record', 'list', 'asset', 'category', 'card', 'analysis'].forEach(t => {
         document.getElementById(`page-${t}`).classList.add('hidden');
-        document.getElementById(`tab-${t}`).className = "flex-1 py-2.5 rounded-lg text-center transition";
+        document.getElementById(`tab-${t}`).className = "flex-1 min-w-[50px] py-2.5 rounded-lg text-center transition";
       });
       document.getElementById(`page-${tabName}`).classList.remove('hidden');
-      document.getElementById(`tab-${tabName}`).className = "flex-1 py-2.5 rounded-lg text-center bg-blue-600 text-white font-bold shadow-sm transition";
+      document.getElementById(`tab-${tabName}`).className = "flex-1 min-w-[50px] py-2.5 rounded-lg text-center bg-blue-600 text-white font-bold shadow-sm transition";
 
       if (tabName === 'analysis') {
         generateAnalysis();
@@ -372,8 +500,23 @@
           document.getElementById('input-qty').value = 1;
           document.getElementById('input-amount').value = 55;
           document.getElementById('input-category').value = "超商";
-          document.getElementById('input-payment').value = "電子支付";
+          document.getElementById('input-payment').value = "🚌 悠遊卡/一卡通";
         }, 500);
+      }
+    }
+
+    function handleCategoryChange() {
+      const cat = document.getElementById('input-category').value;
+      const paymentSelect = document.getElementById('input-payment');
+      
+      if (categories["收入"].includes(cat)) {
+        paymentSelect.value = "🏦 銀行轉帳/匯款";
+      } else if (cat === "超商" || cat === "外食") {
+        paymentSelect.value = "🚌 悠遊卡/一卡通";
+      } else if (cat === "房租" || cat === "保險" || cat === "電信") {
+        paymentSelect.value = "🏦 銀行轉帳/匯款";
+      } else {
+        paymentSelect.value = "💵 現金";
       }
     }
 
@@ -415,12 +558,38 @@
       ['income', 'fixed', 'variable'].forEach((key, idx) => {
         const groupName = ["收入", "固定支出", "變動支出"][idx];
         const container = document.getElementById(`cat-list-${key}`);
-        container.innerHTML = categories[groupName].map(c => 
-          `<span class="bg-blue-50 text-blue-800 px-2.5 py-1 rounded-full border border-blue-200 font-medium">${c}</span>`
-        ).join('');
+        container.innerHTML = categories[groupName].map((c, catIdx) => `
+          <div class="flex justify-between items-center bg-gray-50 p-2 rounded-xl border border-gray-200">
+            <span class="font-bold text-gray-700">${c}</span>
+            <div class="flex gap-1 items-center">
+              <button onclick="moveCategory('${groupName}', ${catIdx}, -1)" class="px-1.5 py-0.5 bg-gray-200 rounded font-bold hover:bg-gray-300">▲</button>
+              <button onclick="moveCategory('${groupName}', ${catIdx}, 1)" class="px-1.5 py-0.5 bg-gray-200 rounded font-bold hover:bg-gray-300">▼</button>
+              <button onclick="removeCategory('${groupName}', ${catIdx})" class="px-1.5 py-0.5 bg-red-100 text-red-600 rounded font-bold hover:bg-red-200 ml-1">✕</button>
+            </div>
+          </div>
+        `).join('');
       });
 
       localStorage.setItem('my_categories', JSON.stringify(categories));
+    }
+
+    function moveCategory(group, index, direction) {
+      const list = categories[group];
+      const newIndex = index + direction;
+      if (newIndex >= 0 && newIndex < list.length) {
+        const temp = list[index];
+        list[index] = list[newIndex];
+        list[newIndex] = temp;
+        renderCategories();
+      }
+    }
+
+    function removeCategory(group, index) {
+      if (confirm(`確定要刪除「${categories[group][index]}」分類嗎？`)) {
+        categories[group].splice(index, 1);
+        renderCategories();
+        showToast('分類已刪除！');
+      }
     }
 
     function addCustomCategory(e) {
@@ -432,59 +601,98 @@
         categories[type].push(name);
         renderCategories();
         document.getElementById('new-cat-name').value = '';
-        alert(`已成功新增「${name}」類別！`);
+        showToast(`已成功新增「${name}」類別！`);
       }
     }
 
-    function addRecord(e) {
-      e.preventDefault();
+    function addRecord(e, keepHeader = false) {
+      if (e) e.preventDefault();
+      
+      const category = document.getElementById('input-category').value;
+      const amount = Number(document.getElementById('input-amount').value);
+      const isIncome = categories["收入"].includes(category);
+      const assetAccountName = document.getElementById('input-asset-account').value;
+
       const record = {
         date: document.getElementById('input-date').value,
         shop: document.getElementById('input-shop').value.trim(),
         desc: document.getElementById('input-desc').value.trim(),
-        category: document.getElementById('input-category').value,
+        category: category,
         payment: document.getElementById('input-payment').value,
+        assetAccount: assetAccountName,
         qty: Number(document.getElementById('input-qty').value) || 1,
         price: Number(document.getElementById('input-price').value) || 0,
-        amount: Number(document.getElementById('input-amount').value)
+        amount: amount,
+        isIncome: isIncome
       };
 
       records.unshift(record);
       localStorage.setItem('my_records', JSON.stringify(records));
+
+      if (assetAccountName) {
+        let acc = assets.find(a => a.name === assetAccountName);
+        if (acc) {
+          if (isIncome) {
+            acc.balance += amount;
+          } else {
+            acc.balance -= amount;
+          }
+          localStorage.setItem('my_assets', JSON.stringify(assets));
+          renderAssets();
+        }
+      }
+
       renderRecords();
 
-      document.getElementById('input-shop').value = '';
-      document.getElementById('input-desc').value = '';
-      document.getElementById('input-price').value = '';
-      document.getElementById('input-amount').value = '';
-
-      alert('已成功儲存記帳紀錄！');
+      if (keepHeader) {
+        document.getElementById('input-desc').value = '';
+        document.getElementById('input-price').value = '';
+        document.getElementById('input-amount').value = '';
+        showToast('已儲存！請繼續輸入下一個品項 ✨');
+      } else {
+        document.getElementById('input-shop').value = '';
+        document.getElementById('input-desc').value = '';
+        document.getElementById('input-price').value = '';
+        document.getElementById('input-amount').value = '';
+        showToast('已成功儲存記帳紀錄！✨');
+      }
     }
 
     function renderRecords() {
       const tbody = document.getElementById('record-list-body');
       const emptyMsg = document.getElementById('empty-msg');
+      const keyword = document.getElementById('search-input')?.value.toLowerCase().trim() || '';
       tbody.innerHTML = '';
 
-      if (records.length === 0) {
+      let filtered = records.filter(r => {
+        if (!keyword) return true;
+        return (r.desc && r.desc.toLowerCase().includes(keyword)) ||
+               (r.shop && r.shop.toLowerCase().includes(keyword)) ||
+               (r.category && r.category.toLowerCase().includes(keyword));
+      });
+
+      if (filtered.length === 0) {
         emptyMsg.classList.remove('hidden');
         return;
       }
       emptyMsg.classList.add('hidden');
 
-      records.forEach((r, index) => {
+      filtered.forEach((r, index) => {
         let tr = document.createElement('tr');
         tr.className = "border-b border-gray-100 hover:bg-gray-50";
+        let amountClass = r.isIncome ? "text-emerald-600" : "text-blue-600";
+        let amountPrefix = r.isIncome ? "+$" : "$";
+
         tr.innerHTML = `
           <td class="p-2 font-mono text-gray-500">
             <div>${r.date}</div>
-            <div class="text-[9px] text-blue-600 font-bold">${r.shop || '商家'}</div>
+            <div class="text-[9px] text-blue-600 font-bold">${r.shop || '一般店家'}</div>
           </td>
           <td class="p-2 font-bold text-gray-800">
             <div>${r.desc}</div>
             <div class="text-[9px] text-gray-400">${r.category} · ${r.payment || '現金'}</div>
           </td>
-          <td class="p-2 text-right font-extrabold text-blue-600">$${r.amount}</td>
+          <td class="p-2 text-right font-extrabold ${amountClass}">${amountPrefix}${r.amount}</td>
           <td class="p-2 text-center whitespace-nowrap">
             <button onclick="openEditModal(${index})" class="text-blue-600 font-bold px-1 hover:underline">編輯</button>
             <button onclick="deleteRecord(${index})" class="text-red-500 font-bold px-1 hover:underline">刪除</button>
@@ -499,6 +707,7 @@
         records.splice(index, 1);
         localStorage.setItem('my_records', JSON.stringify(records));
         renderRecords();
+        showToast('紀錄已刪除');
       }
     }
 
@@ -509,7 +718,7 @@
       document.getElementById('edit-shop').value = r.shop || '';
       document.getElementById('edit-desc').value = r.desc;
       document.getElementById('edit-category').value = r.category;
-      document.getElementById('edit-payment').value = r.payment || '現金';
+      document.getElementById('edit-payment').value = r.payment || '💵 現金';
       document.getElementById('edit-amount').value = r.amount;
 
       document.getElementById('edit-modal').classList.remove('hidden');
@@ -535,7 +744,7 @@
       localStorage.setItem('my_records', JSON.stringify(records));
       renderRecords();
       closeEditModal();
-      alert('修改成功！');
+      showToast('紀錄已修改！');
     }
 
     function clearAllRecords() {
@@ -543,6 +752,72 @@
         records = [];
         localStorage.removeItem('my_records');
         renderRecords();
+        showToast('已清除全部紀錄');
+      }
+    }
+
+    function addAssetAccount(e) {
+      e.preventDefault();
+      const acc = {
+        name: document.getElementById('asset-name').value.trim(),
+        type: document.getElementById('asset-type').value,
+        balance: Number(document.getElementById('asset-balance').value) || 0
+      };
+      assets.push(acc);
+      localStorage.setItem('my_assets', JSON.stringify(assets));
+      renderAssets();
+      document.getElementById('asset-name').value = '';
+      document.getElementById('asset-balance').value = '';
+      showToast(`已新增資產帳戶「${acc.name}」！`);
+    }
+
+    function renderAssets() {
+      const container = document.getElementById('asset-list');
+      const selectAsset = document.getElementById('input-asset-account');
+      container.innerHTML = '';
+      selectAsset.innerHTML = '<option value="">不連動帳戶</option>';
+
+      let posTotal = 0;
+      let negTotal = 0;
+
+      assets.forEach((a, idx) => {
+        if (a.type === '存款帳戶') {
+          posTotal += a.balance;
+        } else {
+          negTotal += Math.abs(a.balance);
+        }
+
+        let opt = document.createElement('option');
+        opt.value = a.name;
+        opt.innerText = `${a.name} ($${a.balance})`;
+        selectAsset.appendChild(opt);
+
+        let div = document.createElement('div');
+        div.className = "bg-gray-50 p-3 rounded-xl border border-gray-200 flex justify-between items-center";
+        div.innerHTML = `
+          <div>
+            <div class="font-bold text-gray-800">${a.name} <span class="text-[10px] font-normal text-gray-500">(${a.type})</span></div>
+            <div class="text-xs font-mono font-bold ${a.type === '存款帳戶' ? 'text-blue-600' : 'text-amber-600'}">
+              當前金額：$${a.balance}
+            </div>
+          </div>
+          <button onclick="deleteAsset(${idx})" class="text-red-500 font-bold hover:underline">刪除</button>
+        `;
+        container.appendChild(div);
+      });
+
+      document.getElementById('asset-positive-total').innerText = `$${posTotal}`;
+      document.getElementById('asset-negative-total').innerText = `$${negTotal}`;
+      const net = posTotal - negTotal;
+      document.getElementById('asset-net-total').innerText = `$${net}`;
+      localStorage.setItem('my_assets', JSON.stringify(assets));
+    }
+
+    function deleteAsset(idx) {
+      if (confirm(`確定要刪除帳戶「${assets[idx].name}」嗎？`)) {
+        assets.splice(idx, 1);
+        renderAssets();
+        showToast('帳戶已刪除');
       }
     }
 
@@ -558,7 +833,7 @@
       renderCards();
       checkCardAlerts();
       document.getElementById('card-bank').value = '';
-      alert('已新增信用卡提醒！');
+      showToast('已新增信用卡提醒！');
     }
 
     function renderCards() {
@@ -609,14 +884,16 @@
 
       let totals = {};
       records.forEach(r => {
-        totals[r.category] = (totals[r.category] || 0) + r.amount;
+        if (!r.isIncome) {
+          totals[r.category] = (totals[r.category] || 0) + r.amount;
+        }
       });
 
       let sorted = Object.entries(totals).sort((a, b) => b - a);
       let topTwo = sorted.slice(0, 2).map(item => `「${item[0]}」（$${item}）`).join(' 與 ');
 
-      document.getElementById('analysis-top-two').innerText = topTwo || "暫無足夠資料";
-      document.getElementById('analysis-warnings').innerText = `目前共記錄 ${records.length} 筆消費。請多留意非必要的變動支出。`;
+      document.getElementById('analysis-top-two').innerText = topTwo || "暫無足夠支出資料";
+      document.getElementById('analysis-warnings').innerText = `目前共記錄 ${records.length} 筆項目。請多留意非必要的變動支出。`;
       document.getElementById('analysis-actions').innerText = "建議下個月為前兩大支出類別設定上限金額，並持續追蹤信用卡與水電費用。";
 
       renderChart(totals);
@@ -653,6 +930,7 @@
         records: records,
         categories: categories,
         cards: cards,
+        assets: assets,
         exportTime: new Date().toISOString()
       };
       const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -660,7 +938,7 @@
       a.href = URL.createObjectURL(blob);
       a.download = `記帳備份_${new Date().toISOString().slice(0,10)}.json`;
       a.click();
-      alert('已匯出備份檔案！換手機時可隨時保留資料。');
+      showToast('已匯出備份檔案！');
     }
   </script>
 </body>
