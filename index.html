@@ -35,13 +35,13 @@
   <!-- LINE 內建瀏覽器引導提示 -->
   <div id="line-notice" class="hidden bg-amber-500 text-white text-xs p-2.5 text-center flex justify-between items-center px-4 sticky top-0 z-50 shadow">
     <span>⚠️ 目前使用 LINE 瀏覽器，拍照功能受限。建議點選右上角 [ ⋯ ] 選擇<b>「以預設瀏覽器開啟」</b>(Safari / Chrome)！</span>
-    <button onclick="document.getElementById('line-notice').remove()" class="ml-2 font-bold bg-amber-600 px-2 py-0.5 rounded">✕</button>
+    <button type="button" onclick="document.getElementById('line-notice').remove()" class="ml-2 font-bold bg-amber-600 px-2 py-0.5 rounded">✕</button>
   </div>
 
   <!-- Header -->
   <header class="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-10 flex justify-between items-center">
     <h1 class="text-base font-bold tracking-wide">記帳史萊姆</h1>
-    <button onclick="exportData()" class="text-xs bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded-lg border border-blue-400 font-medium transition">
+    <button type="button" onclick="exportData()" class="text-xs bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded-lg border border-blue-400 font-medium transition">
       匯出備份
     </button>
   </header>
@@ -53,21 +53,21 @@
         <span class="font-bold" id="card-alert-title">信用卡繳費提醒</span>
         <p id="card-alert-detail" class="text-[11px] text-amber-700 mt-0.5"></p>
       </div>
-      <button onclick="switchTab('card')" class="bg-amber-500 text-white px-2.5 py-1 rounded-lg text-xs font-bold">查看</button>
+      <button type="button" onclick="switchTab('card')" class="bg-amber-500 text-white px-2.5 py-1 rounded-lg text-xs font-bold">查看</button>
     </div>
   </section>
 
   <!-- Main Container -->
   <main class="max-w-md mx-auto p-4 space-y-4">
 
-    <!-- 精簡二字導覽頁籤 (不加圖示) -->
+    <!-- 精簡二字導覽頁籤 -->
     <div class="flex bg-white rounded-xl shadow-sm p-1 border border-gray-200 text-xs font-bold text-gray-500 justify-between">
-      <button onclick="switchTab('record')" id="tab-record" class="flex-1 py-2.5 rounded-lg text-center bg-blue-600 text-white transition">記帳</button>
-      <button onclick="switchTab('list')" id="tab-list" class="flex-1 py-2.5 rounded-lg text-center transition">明細</button>
-      <button onclick="switchTab('asset')" id="tab-asset" class="flex-1 py-2.5 rounded-lg text-center transition">資產</button>
-      <button onclick="switchTab('category')" id="tab-category" class="flex-1 py-2.5 rounded-lg text-center transition">分類</button>
-      <button onclick="switchTab('card')" id="tab-card" class="flex-1 py-2.5 rounded-lg text-center transition">提醒</button>
-      <button onclick="switchTab('analysis')" id="tab-analysis" class="flex-1 py-2.5 rounded-lg text-center transition">分析</button>
+      <button type="button" onclick="switchTab('record')" id="tab-record" class="flex-1 py-2.5 rounded-lg text-center bg-blue-600 text-white transition">記帳</button>
+      <button type="button" onclick="switchTab('list')" id="tab-list" class="flex-1 py-2.5 rounded-lg text-center transition">明細</button>
+      <button type="button" onclick="switchTab('asset')" id="tab-asset" class="flex-1 py-2.5 rounded-lg text-center transition">資產</button>
+      <button type="button" onclick="switchTab('category')" id="tab-category" class="flex-1 py-2.5 rounded-lg text-center transition">分類</button>
+      <button type="button" onclick="switchTab('card')" id="tab-card" class="flex-1 py-2.5 rounded-lg text-center transition">提醒</button>
+      <button type="button" onclick="switchTab('analysis')" id="tab-analysis" class="flex-1 py-2.5 rounded-lg text-center transition">分析</button>
     </div>
 
     <!-- 1. 記帳頁面 -->
@@ -167,7 +167,7 @@
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 space-y-3">
         <div class="flex justify-between items-center">
           <h2 class="font-bold text-gray-700 text-xs">記帳明細</h2>
-          <button onclick="clearAllRecords()" class="text-[11px] text-red-500 hover:underline">清除全部</button>
+          <button type="button" onclick="clearAllRecords()" class="text-[11px] text-red-500 hover:underline">清除全部</button>
         </div>
 
         <div>
@@ -310,7 +310,7 @@
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 space-y-4 text-xs">
         <div class="flex justify-between items-center">
           <h2 class="font-bold text-gray-700">本月財務分析</h2>
-          <button onclick="generateAnalysis()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg transition">
+          <button type="button" onclick="generateAnalysis()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg transition">
             更新分析
           </button>
         </div>
@@ -345,7 +345,7 @@
     <div class="bg-white rounded-2xl p-5 w-full max-w-md space-y-3 text-xs shadow-xl">
       <div class="flex justify-between items-center border-b pb-2">
         <h3 class="font-bold text-blue-600 text-sm">修改記帳紀錄</h3>
-        <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 font-bold text-lg">✕</button>
+        <button type="button" onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 font-bold text-lg">✕</button>
       </div>
       <form onsubmit="saveEditedRecord(event)" class="space-y-3">
         <input type="hidden" id="edit-index">
@@ -411,13 +411,17 @@
     let chartInstance = null;
 
     document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('input-date').valueAsDate = new Date();
-      renderCategories();
-      renderRecords();
-      renderCards();
-      renderAssets();
-      checkCardAlerts();
-      addItemRow();
+      try {
+        document.getElementById('input-date').valueAsDate = new Date();
+        renderCategories();
+        renderRecords();
+        renderCards();
+        renderAssets();
+        checkCardAlerts();
+        addItemRow();
+      } catch (e) {
+        console.error("DOM Init Error:", e);
+      }
     });
 
     function showToast(msg, icon = "✅") {
@@ -441,15 +445,23 @@
     }
 
     function switchTab(tabName) {
-      ['record', 'list', 'asset', 'category', 'card', 'analysis'].forEach(t => {
-        document.getElementById(`page-${t}`).classList.add('hidden');
-        document.getElementById(`tab-${t}`).className = "flex-1 min-w-[50px] py-2.5 rounded-lg text-center transition";
-      });
-      document.getElementById(`page-${tabName}`).classList.remove('hidden');
-      document.getElementById(`tab-${tabName}`).className = "flex-1 min-w-[50px] py-2.5 rounded-lg text-center bg-blue-600 text-white font-bold shadow-sm transition";
+      try {
+        ['record', 'list', 'asset', 'category', 'card', 'analysis'].forEach(t => {
+          const p = document.getElementById(`page-${t}`);
+          const tab = document.getElementById(`tab-${t}`);
+          if (p) p.classList.add('hidden');
+          if (tab) tab.className = "flex-1 min-w-[50px] py-2.5 rounded-lg text-center transition";
+        });
+        const targetPage = document.getElementById(`page-${tabName}`);
+        const targetTab = document.getElementById(`tab-${tabName}`);
+        if (targetPage) targetPage.classList.remove('hidden');
+        if (targetTab) targetTab.className = "flex-1 min-w-[50px] py-2.5 rounded-lg text-center bg-blue-600 text-white font-bold shadow-sm transition";
 
-      if (tabName === 'analysis') {
-        generateAnalysis();
+        if (tabName === 'analysis') {
+          generateAnalysis();
+        }
+      } catch (e) {
+        console.error("switchTab Error:", e);
       }
     }
 
@@ -584,9 +596,9 @@
           <div class="flex justify-between items-center bg-gray-50 p-2 rounded-xl border border-gray-200">
             <span class="font-bold text-gray-700">${c}</span>
             <div class="flex gap-1 items-center">
-              <button onclick="moveCategory('${groupName}', ${catIdx}, -1)" class="px-1.5 py-0.5 bg-gray-200 rounded font-bold hover:bg-gray-300">▲</button>
-              <button onclick="moveCategory('${groupName}', ${catIdx}, 1)" class="px-1.5 py-0.5 bg-gray-200 rounded font-bold hover:bg-gray-300">▼</button>
-              <button onclick="removeCategory('${groupName}', ${catIdx})" class="px-1.5 py-0.5 bg-red-100 text-red-600 rounded font-bold hover:bg-red-200 ml-1">✕</button>
+              <button type="button" onclick="moveCategory('${groupName}', ${catIdx}, -1)" class="px-1.5 py-0.5 bg-gray-200 rounded font-bold hover:bg-gray-300">▲</button>
+              <button type="button" onclick="moveCategory('${groupName}', ${catIdx}, 1)" class="px-1.5 py-0.5 bg-gray-200 rounded font-bold hover:bg-gray-300">▼</button>
+              <button type="button" onclick="removeCategory('${groupName}', ${catIdx})" class="px-1.5 py-0.5 bg-red-100 text-red-600 rounded font-bold hover:bg-red-200 ml-1">✕</button>
             </div>
           </div>
         `).join('');
@@ -717,8 +729,8 @@
           </td>
           <td class="p-2 text-right font-extrabold ${amountClass}">${amountPrefix}${r.amount}</td>
           <td class="p-2 text-center whitespace-nowrap">
-            <button onclick="openEditModal(${index})" class="text-blue-600 font-bold px-1 hover:underline">編輯</button>
-            <button onclick="deleteRecord(${index})" class="text-red-500 font-bold px-1 hover:underline">刪除</button>
+            <button type="button" onclick="openEditModal(${index})" class="text-blue-600 font-bold px-1 hover:underline">編輯</button>
+            <button type="button" onclick="deleteRecord(${index})" class="text-red-500 font-bold px-1 hover:underline">刪除</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -832,7 +844,7 @@
               當前金額：$${a.balance}
             </div>
           </div>
-          <button onclick="deleteAsset(${idx})" class="text-red-500 font-bold hover:underline">刪除</button>
+          <button type="button" onclick="deleteAsset(${idx})" class="text-red-500 font-bold hover:underline">刪除</button>
         `;
         container.appendChild(div);
       });
@@ -882,7 +894,7 @@
             <div class="font-bold text-amber-900">💳 ${c.bank}</div>
             <div class="text-[10px] text-amber-700">結帳日：${c.statementDate} ｜ 最晚繳費日：<b class="text-red-500">${c.dueDate}</b></div>
           </div>
-          <button onclick="deleteCard(${idx})" class="text-red-500 font-bold hover:underline">刪除</button>
+          <button type="button" onclick="deleteCard(${idx})" class="text-red-500 font-bold hover:underline">刪除</button>
         `;
         container.appendChild(div);
       });
@@ -908,60 +920,61 @@
     }
 
     function generateAnalysis() {
-      const resultDiv = document.getElementById('analysis-result');
-      if (records.length === 0) {
-        return;
-      }
-
-      let totals = {};
-      records.forEach(r => {
-        if (!r.isIncome) {
-          totals[r.category] = (totals[r.category] || 0) + r.amount;
+      try {
+        const resultDiv = document.getElementById('analysis-result');
+        if (records.length === 0) {
+          return;
         }
-      });
 
-      let sorted = Object.entries(totals).sort((a, b) => b - a);
-      let topTwo = sorted.slice(0, 2).map(item => `「${item[0]}」（$${item}）`).join(' 與 ');
+        let totals = {};
+        records.forEach(r => {
+          if (!r.isIncome) {
+            totals[r.category] = (totals[r.category] || 0) + r.amount;
+          }
+        });
 
-      document.getElementById('analysis-top-two').innerText = topTwo || "暫無足夠支出資料";
-      document.getElementById('analysis-warnings').innerText = `目前共記錄 ${records.length} 筆項目。請多留意非必要的變動支出。`;
-      document.getElementById('analysis-actions').innerText = "建議下個月為前兩大支出類別設定上限金額，並持續追蹤信用卡與水電費用。";
+        let sorted = Object.entries(totals).sort((a, b) => b - a);
+        let topTwo = sorted.slice(0, 2).map(item => `「${item[0]}」（$${item}）`).join(' 與 ');
 
-      renderChart(totals);
+        document.getElementById('analysis-top-two').innerText = topTwo || "暫無足夠支出資料";
+        document.getElementById('analysis-warnings').innerText = `目前共記錄 ${records.length} 筆項目。請多留意非必要的變動支出。`;
+        document.getElementById('analysis-actions').innerText = "建議下個月為前兩大支出類別設定上限金額，並持續追蹤信用卡與水電費用。";
+
+        renderChart(totals);
+      } catch (e) {
+        console.error("generateAnalysis error:", e);
+      }
     }
 
     function renderChart(totals) {
-      const ctx = document.getElementById('categoryChart').getContext('2d');
-      if (chartInstance) {
-        chartInstance.destroy();
-      }
-
-      chartInstance = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: Object.keys(totals),
-          datasets: [{
-            data: Object.values(totals),
-            backgroundColor: [
-              '#2563eb', '#3b82f6', '#60a5fa', '#34d399', '#fbbf24', '#f87171'
-            ]
-          }]
-        },
-        options: {
-           [{
-            data: Object.values(totals),
-            backgroundColor: [
-              '#2563eb', '#3b82f6', '#60a5fa', '#34d399', '#fbbf24', '#f87171'
-            ]
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
-          }
+      try {
+        if (typeof Chart === 'undefined') return;
+        const ctx = document.getElementById('categoryChart').getContext('2d');
+        if (chartInstance) {
+          chartInstance.destroy();
         }
-      });
+
+        chartInstance = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: Object.keys(totals),
+            datasets: [{
+              data: Object.values(totals),
+              backgroundColor: [
+                '#2563eb', '#3b82f6', '#60a5fa', '#34d399', '#fbbf24', '#f87171'
+              ]
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+            }
+          }
+        });
+      } catch (e) {
+        console.error("renderChart error:", e);
+      }
     }
 
     function exportData() {
